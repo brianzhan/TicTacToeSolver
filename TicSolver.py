@@ -1,14 +1,11 @@
 import operator
 from copy import copy, deepcopy
 
-def print_welcome_message():
-    print "Welcome to the tictactoe player!"
+
+# IMPORTANT NOTE: Human is X, Machine is O
 
 globalBoardArray = [[' ', ' ', ' '], [' ', ' ', ' '], [' ', ' ', ' ']]
 takenSquaresBoard = [[0,0,0], [0,0,0], [0,0,0]]
-
-spotNotTaken = False
-
 
 def display_board(boardArray):
     print '---------------------'
@@ -30,12 +27,16 @@ def main():
     hypotheticalBoard = GetBoardCopy(globalBoardArray)
     print_welcome_message()
     display_board(globalBoardArray)
-    while (gameOver(globalBoardArray,takenSquaresBoard) != True):
-        HumanSequence()
+    while (gameOver(globalBoardArray, takenSquaresBoard) is False):
+        HumanSequence() # Technically, there should be a gameOver check, but this is impossible because the machine can't lose
         MachineRegular()
         display_board(globalBoardArray)
+        gameOver(globalBoardArray, takenSquaresBoard)  # this is because gameOver NEVER gets called
     print "game over"
 
+
+def print_welcome_message():
+    print "Welcome to the tictactoe player!"
 
 # Human functions
 
@@ -43,11 +44,11 @@ def HumanSequence():
     print "HumanSequence called"
     x = input("Type the x-coordinate of where to put check (0-2)")
     y = input("Type the y-coordinate of where to put check (0-2)")
-    while (takenSquaresBoard[x][y] == 1 or x > 2 or y > 2): # if spot is not taken, tell the user to input another location,
+    while (takenSquaresBoard[x][y] == 1 or x > 2 or y > 2):  # if spot is not taken, tell the user to input another location,
         print "Spot is taken, input another location"
         y = input("Type the x-coordinate of where to put check (0-2)")
         x = input("Type the y-coordinate of where to put check (0-2)")
-    put_check(x,y)
+    put_check(x,y) # includes display board
     if (gameOver(globalBoardArray,takenSquaresBoard)):
         print "game over!"
         return -1
@@ -67,9 +68,8 @@ def HypotheticalVisit(x, y):
     hypotheticalTaken[x][y] = 1
     hypotheticalBoard[x][y] = 'O'
 
-#   @Type: Void 
+#   @Type: Void
 def markHumanVisit(x, y, board, taken):
-    print "human visit called"
     taken[x][y] = 1
     board[x][y] = 'X'
 
@@ -82,6 +82,7 @@ def markMachineVisit(x, y, board, taken):
     board[x][y] = 'O'
 
 
+
 def GetBoardCopy(board):
     duplicatedBoard = []
     duplicatedBoard = deepcopy(board)  # not sure if need duplicatedBoard = []
@@ -89,28 +90,32 @@ def GetBoardCopy(board):
 
 
 def MachineRegular():
-    print "MachineRegular called"
+    print "Machine's move:"
     if(AttemptWin(globalBoardArray,takenSquaresBoard) == 1):
         print "machine won"
         return
     elif(opponentTwoInRowThreat(globalBoardArray,takenSquaresBoard) is True):
-        print "opponentTwoInRowThreat"
         StopOpponentWin(globalBoardArray,takenSquaresBoard)
         return
     elif (globalBoardArray[1][1] == ' '):
         globalBoardArray[1][1] = 'O'
+        takenSquaresBoard[1][1] = 1
         return
     elif (globalBoardArray[0][0] == ' '):
         globalBoardArray[0][0] = 'O'
+        takenSquaresBoard[0][0] = 1
         return
     elif (globalBoardArray[2][2] == ' '):
         globalBoardArray[2][2] = 'O'
+        takenSquaresBoard[2][2] = 1
         return
     elif (globalBoardArray[0][2] == ' '):
         globalBoardArray[0][2] = 'O'
+        takenSquaresBoard[0][2] = 1
         return
     elif (globalBoardArray[2][0] == ' '):
         globalBoardArray[2][0] = 'O'
+        takenSquaresBoard[2][0] = 1
         return
     else:
         for x in range(0,3):
@@ -126,40 +131,49 @@ def MachineRegular():
 
 # @Type: Boolean
 def opponentTwoInRowThreat(board, taken):
-    hypoBoard = GetBoardCopy(board)
-    hypoTaken = GetBoardCopy(taken)
     for x in range(0, 3):
         for y in range(0, 3):
+            hypoBoard = GetBoardCopy(board)
+            hypoTaken = GetBoardCopy(taken)
+            if (hypoTaken[x][y] == 0):
+                markHumanVisit(x, y, hypoBoard, hypoTaken)
+                if (gameOver(hypoBoard, hypoTaken) is True):
+                    print "game over returned true"
+                    return True
+    for y in range(0, 3):
+        for x in range(0, 3):
+            hypoBoard = GetBoardCopy(board)
+            hypoTaken = GetBoardCopy(taken)
             if (hypoTaken[x][y] == 0):
                 markHumanVisit(x, y, hypoBoard, hypoTaken)
                 if (gameOver(hypoBoard, hypoTaken) is True):
                     return True
-                else:
-                    undoHumanVisit(x, y, hypoBoard, hypoTaken)
     return False
 
 
-def StopOpponentWin(board,taken):
-    hypoBoard = GetBoardCopy(board)
-    hypoTaken = GetBoardCopy(taken)
+def StopOpponentWin(board, taken):
     for x in range(0, 3):
         for y in range(0, 3):
-            if (taken[x][y] == 0):
+            hypoBoard = GetBoardCopy(board)
+            hypoTaken = GetBoardCopy(taken)
+            print taken
+            print x,
+            print y,
+            if (hypoTaken[x][y] == 0):
                 markHumanVisit(x, y, hypoBoard, hypoTaken)
-                if (gameOver(hypoBoard, hypoTaken)):
-                    markMachineVisit(x, y, board, taken)
+                if (gameOver(hypoBoard, hypoTaken) is True):
+                    board[x][y] = 'O'
+                    display_board(board)
                     return 1
-                else:
-                    undoHumanVisit(x,y,hypoBoard,hypoTaken)
     for y in range(0, 3):
         for x in range(0, 3):
-            if (taken[x][y] == 0):
+            hypoBoard = GetBoardCopy(board)
+            hypoTaken = GetBoardCopy(taken)
+            if (hypoTaken[x][y] == 0):
                 markHumanVisit(x, y, hypoBoard, hypoTaken)
-                if (gameOver(hypoBoard, hypoTaken)):
-                    markMachineVisit(x, y, board, taken)
+                if (gameOver(hypoBoard, hypoTaken) is True):
+                    board[x][y] = 'O'
                     return 1
-                else:
-                    undoHumanVisit(x,y,hypoBoard,hypoTaken)
     return 0
 
 def AttemptWin(board,taken):
@@ -191,63 +205,48 @@ def undoMachineVisit(x,y,board,taken):
 
 # @Type: boolean
 # if there is a winner, terminate; if all spots are taken, terminate
+
 def gameOver(board,taken):
     counter = 0
     #display_board(board)
-    for item in enumerate(taken):
-        if (item == 1):
-            counter = counter + 1
-    if (counter == 9):
-        print "board is full, game over"
+    for x in range(0,3):
+        for y in range(0,3):
+            if(taken[x][y] is 1):
+                counter = counter + 1
+    if (counter is 9):
         return True
     if(board[0][0] == 'O' and board[1][1] == 'O' and board[2][2] == 'O'):  # first diagonal
-        print 2
         return True
     elif (board[0][0] == 'O' and board[0][1] == 'O' and board[0][2] == 'O'):  # first row
-        print 3
-        return True
-    elif (board[0][0] == 'O' and board[1][0] == 'O' and board[2][0] == 'O'):  # first column
-        print 4
         return True
     elif (board[1][0] == 'O' and board[1][1] == 'O' and board[1][2] == 'O'):  # second row
-        print "5th"
         return True
     elif (board[2][0] == 'O' and board[2][1] == 'O' and board[2][2] == 'O'):  # third row
-        print 6
         return True
-    elif (board[1][0] == 'O' and board[1][1] == 'O' and board[1][2] == 'O'):  # second column
-        print 7
+    elif (board[0][0] == 'O' and board[1][0] == 'O' and board[2][0] == 'O'):  # first column
         return True
-    elif (board[2][0] == 'O' and board[2][1] == 'O' and board[2][2] == 'O'):  # third column
-        print 8
+    elif (board[0][1] == 'O' and board[1][1] == 'O' and board[2][1] == 'O'):  # second column
+        return True
+    elif (board[0][2] == 'O' and board[1][2] == 'O' and board[2][2] == 'O'):  # third column
         return True
     elif (board[0][2] == 'O' and board[1][1] == 'O' and board[2][0] == 'O'):  # second diagonal
-        print 9
         return True  # machine win beginning
     elif (board[0][0] == 'X' and board[1][1] == 'X' and board[2][2] == 'X'):  # first diagonal
-        print "10th"
         return True
     elif (board[0][0] == 'X' and board[0][1] == 'X' and board[0][2] == 'X'):  # first row
-        print "11th"
-        return True
-    elif (board[0][0] == 'X' and board[1][0] == 'X' and board[2][0] == 'X'):  # first column
-        print 12
         return True
     elif (board[1][0] == 'X' and board[1][1] == 'X' and board[1][2] == 'X'):  # second row
-        print 13
         return True
     elif (board[2][0] == 'X' and board[2][1] == 'X' and board[2][2] == 'X'):  # third row
-        print 14
         return True
-    elif (board[1][0] == 'X' and board[1][1] == 'X' and board[1][2] == 'X'):  # second column
-        print 15
+    elif (board[0][0] == 'X' and board[1][0] == 'X' and board[2][0] == 'X'):  # first column
         return True
-    elif (board[2][0] == 'X' and board[2][1] == 'X' and board[2][2] == 'X'):  # third column
-        print 16
+    elif (board[0][1] == 'X' and board[1][1] == 'X' and board[2][1] == 'X'):  # second column
+        return True
+    elif (board[0][2] == 'X' and board[1][2] == 'X' and board[2][2] == 'X'):  # third column
         return True
     elif (board[0][2] == 'X' and board[1][1] == 'X' and board[2][0] == 'X'):  # second diagonal
-        print 17
-        return True
+        return True 
     return False
 
 
