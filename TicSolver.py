@@ -36,7 +36,7 @@ def main():
 
 
 def print_welcome_message():
-    print "Welcome to the tictactoe player!"
+    print "Welcome to the tictactoe player! You are X, the machine is O" 
 
 # Human functions
 
