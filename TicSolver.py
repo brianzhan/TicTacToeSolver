@@ -41,7 +41,7 @@ def print_welcome_message():
 # Human functions
 
 def HumanSequence():
-    print "HumanSequence called"
+    print "Your turn:"
     x = input("Type the x-coordinate of where to put check (0-2)")
     y = input("Type the y-coordinate of where to put check (0-2)")
     while (takenSquaresBoard[x][y] == 1 or x > 2 or y > 2):  # if spot is not taken, tell the user to input another location,
@@ -92,7 +92,7 @@ def GetBoardCopy(board):
 def MachineRegular():
     print "Machine's move:"
     if(AttemptWin(globalBoardArray,takenSquaresBoard) == 1):
-        print "machine won"
+        print "Machine wins"
         return
     elif(opponentTwoInRowThreat(globalBoardArray,takenSquaresBoard) is True):
         StopOpponentWin(globalBoardArray,takenSquaresBoard)
@@ -138,7 +138,6 @@ def opponentTwoInRowThreat(board, taken):
             if (hypoTaken[x][y] == 0):
                 markHumanVisit(x, y, hypoBoard, hypoTaken)
                 if (gameOver(hypoBoard, hypoTaken) is True):
-                    print "game over returned true"
                     return True
     for y in range(0, 3):
         for x in range(0, 3):
@@ -156,13 +155,11 @@ def StopOpponentWin(board, taken):
         for y in range(0, 3):
             hypoBoard = GetBoardCopy(board)
             hypoTaken = GetBoardCopy(taken)
-            print taken
-            print x,
-            print y,
             if (hypoTaken[x][y] == 0):
                 markHumanVisit(x, y, hypoBoard, hypoTaken)
                 if (gameOver(hypoBoard, hypoTaken) is True):
                     board[x][y] = 'O'
+                    takenSquaresBoard[x][y] = 1
                     display_board(board)
                     return 1
     for y in range(0, 3):
@@ -173,6 +170,7 @@ def StopOpponentWin(board, taken):
                 markHumanVisit(x, y, hypoBoard, hypoTaken)
                 if (gameOver(hypoBoard, hypoTaken) is True):
                     board[x][y] = 'O'
+                    takenSquaresBoard[x][y] = 1
                     return 1
     return 0
 
