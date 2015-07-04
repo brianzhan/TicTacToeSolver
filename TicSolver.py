@@ -160,7 +160,6 @@ def StopOpponentWin(board, taken):
                 if (gameOver(hypoBoard, hypoTaken) is True):
                     board[x][y] = 'O'
                     takenSquaresBoard[x][y] = 1
-                    display_board(board)
                     return 1
     for y in range(0, 3):
         for x in range(0, 3):
